@@ -1,21 +1,22 @@
-# App del Tiempo — Módulo 7 (Usuarios, Login y Estado Global)
+# App del Tiempo — Versión final (Portafolio)
 
-App de clima (SPA con Vue 3) a la que le agregué un **sistema básico de usuarios** (login y registro), **Vuex** para el estado global de la sesión, y **rutas protegidas** con Vue Router. La parte del clima es la misma del Módulo 6 (datos en tiempo real desde la API gratuita Open-Meteo); aquí el foco está en la **autenticación** y la **personalización** por usuario.
+SPA hecha con **Vue 3** que muestra el clima de 8 ciudades españolas en tiempo real (API gratuita **Open-Meteo**), con **inicio de sesión**, **Vuex** para el estado global y **rutas protegidas**. Este es el producto final de mi portafolio.
 
-## Sistema de usuarios
+## Requisitos
 
-Los usuarios son **simulados en el front** (no hay backend real). Están en `src/services/usuarios.js`. De cada usuario se guarda:
+- **Node.js** 20.19+ o 22.12+
+- **npm** (viene incluido con Node)
 
-- **nombre** — para el saludo "Hola, {nombre}" en la navbar.
-- **correo** y **password** — para validar el inicio de sesión.
-- **favoritos** — lista de IDs de las ciudades favoritas del usuario.
-- **preferencias** — unidad de temperatura (°C / °F) y tema (claro / oscuro).
+## Instrucciones para ejecutarlo en local
 
-Cuando inicias sesión, esos datos se cargan en **Vuex** (módulo `usuario`) y la interfaz se ajusta a ese usuario:
+```
+npm install
+npm run dev
+```
 
-- La navbar muestra tu nombre y el botón **Cerrar sesión**.
-- Las tarjetas de inicio muestran la temperatura en tu **unidad preferida** (°C o °F).
-- Puedes marcar ciudades como **favoritas** (⭐) y verlas en la sección **Favoritos**.
+Abre la dirección que aparece en la terminal (normalmente `http://localhost:5173`).
+
+> **No necesita clave de API ni archivo `.env`**: Open-Meteo es gratuita y no requiere API key.
 
 ### Usuarios de prueba
 
@@ -26,36 +27,45 @@ Cuando inicias sesión, esos datos se cargan en **Vuex** (módulo `usuario`) y l
 
 También puedes crear uno nuevo en `/registro`.
 
-## Rutas (Vue Router)
+## Rutas principales
 
-| Ruta | Acceso | Descripción |
+| Ruta | Acceso | Qué muestra |
 |------|--------|-------------|
-| `/` | Pública | Home: ciudades + buscador (con favoritos y unidad según el usuario). |
-| `/lugar/:id` | Pública | Detalle del pronóstico de una ciudad. |
+| `/` | Pública | **Home**: lista de ciudades con su clima actual + buscador. |
+| `/lugar/:id` | Pública | **Detalle**: clima actual, pronóstico de 7 días, estadísticas y alertas. |
 | `/login` | Pública | Inicio de sesión. |
-| `/registro` | Pública | Crear un usuario nuevo (simulado). |
-| `/favoritos` | **Privada** | Lista de tus ciudades favoritas. |
-| `/preferencias` | **Privada** | Elegir unidad (°C / °F) y tema. |
+| `/registro` | Pública | Crear un usuario (simulado). |
+| `/favoritos` | **Privada** | Ciudades favoritas del usuario. |
+| `/preferencias` | **Privada** | Unidad de temperatura (°C/°F) y tema. |
 
-Las rutas privadas están protegidas con un **guard global** (`router.beforeEach`): si intentas entrar sin sesión, te redirige a `/login`.
+## Funcionalidades clave
 
-## Estado global (Vuex)
+- **API real**: datos del clima desde **Open-Meteo** con **Axios** (instancia configurada en `src/services/weather.js`), con estados de `cargando…` y error al consultar.
+- **Estado global con Vuex** (dos módulos):
+  - `clima`: lista de lugares, lugar seleccionado y banderas de carga/error.
+  - `usuario`: sesión, favoritos y preferencias (persisten en `localStorage`).
+- **Estadísticas y alertas** semanales: mínimo, máximo, promedio, conteo por tipo de clima y alertas automáticas (calor, semana lluviosa, viento fuerte, UV alto).
+- **Personalización por usuario**: favoritos y unidad de temperatura (°C/°F) consistente en toda la app.
+- **Rutas protegidas** con un guard global de Vue Router.
 
-El módulo `usuario` (`src/store/modules/usuario.js`) contiene:
-
-- **state**: `usuarioActual` (nombre, correo, favoritos, preferencias) y `error`.
-- **getters**: `isAuthenticated`, `nombre`, `favoritos`, `esFavorito`, `unidad`, `tema`.
-- **mutations** (síncronas): `setUsuario`, `limpiarUsuario`, `toggleFavorito`, `setUnidad`, `setTema`.
-- **actions**: `login`, `logout`, `registrar`.
-
-## Cómo ejecutar
+## Estructura del proyecto
 
 ```
-npm install
-npm run dev
+src/
+├── services/weather.js        # Axios + API Open-Meteo + helpers
+├── store/
+│   ├── index.js               # store de Vuex
+│   └── modules/
+│       ├── clima.js           # lista de lugares y lugar seleccionado
+│       └── usuario.js         # sesión, favoritos y preferencias
+├── router/index.js            # rutas + guard de autenticación
+├── components/WeatherCard.vue # tarjeta de ciudad
+└── views/                     # Home, Detalle, Login, Registro, Favoritos, Preferencias
 ```
 
-Abre la dirección que aparece en la terminal (normalmente `http://localhost:5173`).
+## Capturas
+
+*(Opcional: agrega aquí capturas de la Home, el Detalle y la vista de Favoritos para mejorar la presentación.)*
 
 ## Repositorio
 
