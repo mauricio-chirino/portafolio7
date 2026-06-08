@@ -1,15 +1,18 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import WeatherCard from '../components/WeatherCard.vue'
-import { LUGARES, fetchClima, parsearActual } from '../services/weather.js'
 
 const router = useRouter()
+const store = useStore()
 
-const lugares = ref([])
-const cargando = ref(true)
-const error = ref(false)
 const busqueda = ref('')
+
+// Los datos del clima vienen del store (módulo clima)
+const lugares = computed(() => store.state.clima.lugares)
+const cargando = computed(() => store.state.clima.cargando)
+const error = computed(() => store.state.clima.error)
 
 const lugaresFiltrados = computed(() => {
   const q = busqueda.value.trim().toLowerCase()
@@ -17,22 +20,11 @@ const lugaresFiltrados = computed(() => {
   return lugares.value.filter(l => l.nombre.toLowerCase().includes(q))
 })
 
-onMounted(async () => {
-  try {
-    const peticiones = LUGARES.map(async (lugar) => {
-      try {
-        const datos = await fetchClima(lugar.lat, lugar.lon)
-        return { id: lugar.id, nombre: lugar.nombre, ...parsearActual(datos.current) }
-      } catch {
-        return null
-      }
-    })
-    const resultados = await Promise.all(peticiones)
-    lugares.value = resultados.filter(Boolean)
-  } catch {
-    error.value = true
-  } finally {
-    cargando.value = false
+onMounted(() => {
+  // Si todavía no tenemos las ciudades, las pedimos.
+  // (Así no se vuelve a cargar al regresar del detalle.)
+  if (store.state.clima.lugares.length === 0) {
+    store.dispatch('clima/cargarLugares')
   }
 })
 
@@ -72,7 +64,7 @@ function irADetalle(id) {
         :lugar="lugar"
         @seleccionar="irADetalle"
       />
-      <p v-show="lugaresFiltrados.length === 0" class="home__no-results">
+      <p v-show="lugaresFiltrados.length === 0 && busqueda" class="home__no-results">
         <i class="bi bi-search"></i> No se encontró ninguna ciudad con "{{ busqueda }}"
       </p>
     </div>

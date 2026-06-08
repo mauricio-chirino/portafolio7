@@ -1,78 +1,64 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import {
-  LUGARES,
-  fetchPronostico,
-  parsearActual,
-  procesarPronostico,
-  calcularEstadisticas,
-  generarAlertas,
-} from '../services/weather.js'
+import { LUGARES } from '../services/weather.js'
 
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
 
-// Texto de temperatura en la unidad preferida del usuario (lo provee el store)
+// Temperatura en la unidad del usuario (getter del store)
 const tempTexto = computed(() => store.getters['usuario/tempTexto'])
 
-const lugar = computed(() => LUGARES.find(l => l.id === Number(route.params.id)))
+// Sabemos al instante si la ciudad existe (sin esperar a la API)
+const lugarBase = computed(() => LUGARES.find(l => l.id === Number(route.params.id)))
 
-const cargando = ref(true)
-const error = ref(false)
-const actual = ref(null)
-const pronostico = ref([])
-const stats = ref(null)
-const alertas = ref([])
+// Los datos del clima vienen del store (módulo clima)
+const cargando = computed(() => store.state.clima.cargando)
+const error = computed(() => store.state.clima.error)
+const seleccionado = computed(() => store.state.clima.seleccionado)
+
+// Atajos para el template (disponibles cuando ya hay datos cargados)
+const actual = computed(() => seleccionado.value?.actual)
+const pronostico = computed(() => seleccionado.value?.pronostico || [])
+const stats = computed(() => seleccionado.value?.stats)
+const alertas = computed(() => seleccionado.value?.alertas || [])
 
 const fechaHoy = new Date().toLocaleDateString('es-ES', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
 })
 
-async function cargarDatos() {
-  if (!lugar.value) { router.push('/'); return }
-  cargando.value = true
-  error.value = false
-  try {
-    const datos = await fetchPronostico(lugar.value.lat, lugar.value.lon)
-    actual.value = parsearActual(datos.current)
-    pronostico.value = procesarPronostico(datos.daily)
-    stats.value = calcularEstadisticas(pronostico.value)
-    alertas.value = generarAlertas(stats.value, pronostico.value)
-  } catch {
-    error.value = true
-  } finally {
-    cargando.value = false
-  }
+function cargar() {
+  if (!lugarBase.value) { router.push('/'); return }
+  store.dispatch('clima/cargarDetalle', route.params.id)
 }
 
-onMounted(cargarDatos)
-watch(() => route.params.id, cargarDatos)
+onMounted(cargar)
+watch(() => route.params.id, cargar)
 </script>
 
 <template>
-  <section class="detail" v-if="lugar">
+  <section class="detail" v-if="lugarBase">
     <button class="btn--back" @click="router.push('/')">
       <i class="bi bi-arrow-left btn--back-icon"></i>Volver al Inicio
     </button>
 
     <p v-if="cargando" class="loading-msg">
-      <i class="bi bi-cloud-download"></i> Cargando datos de {{ lugar.nombre }}...
+      <i class="bi bi-cloud-download"></i> Cargando datos de {{ lugarBase.nombre }}...
     </p>
     <p v-else-if="error" class="error-msg">
       <i class="bi bi-exclamation-triangle"></i> Error al cargar los datos del lugar.
     </p>
 
-    <div v-else class="card detail__card">
+    <div v-else-if="seleccionado" class="card detail__card">
       <div class="card-body">
 
         <!-- ── Encabezado ── -->
         <div class="detail__header">
           <div class="detail__header-content">
             <div class="detail__header-info">
-              <h2 class="detail__header-city">{{ lugar.nombre }}</h2>
+              <h2 class="detail__header-city">{{ lugarBase.nombre }}</h2>
               <p class="detail__header-date">{{ fechaHoy }}</p>
             </div>
             <div class="detail__header-weather">
