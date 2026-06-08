@@ -29,14 +29,14 @@ async function registrar() {
     <h1>Crear cuenta</h1>
 
     <form class="auth__form" @submit.prevent="registrar">
-      <label>Nombre</label>
-      <input v-model="nombre" type="text" />
+      <label for="nombre">Nombre</label>
+      <input id="nombre" v-model="nombre" type="text" autocomplete="name" />
 
-      <label>Correo</label>
-      <input v-model="correo" type="text" />
+      <label for="correo">Correo</label>
+      <input id="correo" v-model="correo" type="text" autocomplete="email" />
 
-      <label>Contraseña</label>
-      <input v-model="password" type="password" />
+      <label for="password">Contraseña</label>
+      <input id="password" v-model="password" type="password" autocomplete="new-password" />
 
       <button type="submit">Registrarme</button>
     </form>

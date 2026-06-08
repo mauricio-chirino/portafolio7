@@ -31,11 +31,11 @@ async function entrar() {
     <h1>Iniciar sesión</h1>
 
     <form class="auth__form" @submit.prevent="entrar">
-      <label>Correo</label>
-      <input v-model="correo" type="text" />
+      <label for="correo">Correo</label>
+      <input id="correo" v-model="correo" type="text" autocomplete="username" />
 
-      <label>Contraseña</label>
-      <input v-model="password" type="password" />
+      <label for="password">Contraseña</label>
+      <input id="password" v-model="password" type="password" autocomplete="current-password" />
 
       <button type="submit">Entrar</button>
     </form>
