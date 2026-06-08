@@ -11,15 +11,8 @@ defineEmits(['seleccionar'])
 const store = useStore()
 
 const logueado = computed(() => store.getters['usuario/isAuthenticated'])
-const unidad = computed(() => store.getters['usuario/unidad'])
-
-// Convierte la temperatura según la preferencia del usuario (°C o °F)
-function aTemp(celsius) {
-  if (unidad.value === 'F') {
-    return Math.round((celsius * 9) / 5 + 32)
-  }
-  return celsius
-}
+// Texto de temperatura ya convertido a la unidad del usuario (lo provee el store)
+const tempTexto = computed(() => store.getters['usuario/tempTexto'])
 
 function esFavorito(id) {
   return store.getters['usuario/esFavorito'](id)
@@ -51,9 +44,9 @@ function alternarFavorito(id) {
       <div class="tiempo-card__icon">
         <i :class="`bi ${lugar.icono}`"></i>
       </div>
-      <div class="tiempo-card__temperature">{{ aTemp(lugar.temperatura) }}°{{ unidad }}</div>
+      <div class="tiempo-card__temperature">{{ tempTexto(lugar.temperatura) }}</div>
       <p class="tiempo-card__description">{{ lugar.descripcion }}</p>
-      <p class="tiempo-card__feels">Sensación: {{ aTemp(lugar.sensacionTermica) }}°{{ unidad }}</p>
+      <p class="tiempo-card__feels">Sensación: {{ tempTexto(lugar.sensacionTermica) }}</p>
     </div>
 
     <div class="tiempo-card__details">

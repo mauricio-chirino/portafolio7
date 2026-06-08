@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import {
   LUGARES,
   fetchPronostico,
@@ -12,6 +13,10 @@ import {
 
 const route = useRoute()
 const router = useRouter()
+const store = useStore()
+
+// Texto de temperatura en la unidad preferida del usuario (lo provee el store)
+const tempTexto = computed(() => store.getters['usuario/tempTexto'])
 
 const lugar = computed(() => LUGARES.find(l => l.id === Number(route.params.id)))
 
@@ -74,7 +79,7 @@ watch(() => route.params.id, cargarDatos)
               <div class="detail__header-icon">
                 <i :class="`bi ${actual.icono}`"></i>
               </div>
-              <div class="detail__header-temp">{{ actual.temperatura }}°C</div>
+              <div class="detail__header-temp">{{ tempTexto(actual.temperatura) }}</div>
               <p class="detail__header-description">{{ actual.descripcion }}</p>
             </div>
           </div>
@@ -85,7 +90,7 @@ watch(() => route.params.id, cargarDatos)
           <div class="detail__stats-item">
             <i class="bi bi-thermometer-half detail__stats-item-icon detail__stats-item-icon--feels"></i>
             <p class="detail__stats-item-label">Sensación</p>
-            <p class="detail__stats-item-value">{{ actual.sensacionTermica }}°C</p>
+            <p class="detail__stats-item-value">{{ tempTexto(actual.sensacionTermica) }}</p>
           </div>
           <div class="detail__stats-item">
             <i class="bi bi-droplet detail__stats-item-icon detail__stats-item-icon--humidity"></i>
@@ -126,7 +131,7 @@ watch(() => route.params.id, cargarDatos)
             <i class="bi bi-thermometer detail__stats-item-icon detail__stats-item-icon--feels"></i>
             <p class="detail__stats-item-label">Rango hoy</p>
             <p class="detail__stats-item-value">
-              {{ pronostico[0].tempMax }}°C / {{ pronostico[0].tempMin }}°C
+              {{ tempTexto(pronostico[0].tempMax) }} / {{ tempTexto(pronostico[0].tempMin) }}
             </p>
           </div>
         </div>
@@ -145,7 +150,7 @@ watch(() => route.params.id, cargarDatos)
               <div class="pronostico__day-tiempo">
                 <i :class="`bi ${dia.icono} pronostico__day-tiempo-icon`"></i>
                 <span class="pronostico__day-tiempo-temp">
-                  {{ dia.tempMax }}°C / {{ dia.tempMin }}°C
+                  {{ tempTexto(dia.tempMax) }} / {{ tempTexto(dia.tempMin) }}
                 </span>
               </div>
 
@@ -179,15 +184,15 @@ watch(() => route.params.id, cargarDatos)
           <div class="stats-semana__grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))">
             <div class="stats-semana__item">
               <p class="stats-semana__label">Temp. mínima</p>
-              <p class="stats-semana__value">{{ stats.tempMin }}°C</p>
+              <p class="stats-semana__value">{{ tempTexto(stats.tempMin) }}</p>
             </div>
             <div class="stats-semana__item">
               <p class="stats-semana__label">Temp. máxima</p>
-              <p class="stats-semana__value">{{ stats.tempMax }}°C</p>
+              <p class="stats-semana__value">{{ tempTexto(stats.tempMax) }}</p>
             </div>
             <div class="stats-semana__item">
               <p class="stats-semana__label">Temp. promedio</p>
-              <p class="stats-semana__value">{{ stats.tempProm }}°C</p>
+              <p class="stats-semana__value">{{ tempTexto(stats.tempProm) }}</p>
             </div>
             <div class="stats-semana__item">
               <p class="stats-semana__label">Precipitación total</p>
