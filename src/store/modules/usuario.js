@@ -1,12 +1,24 @@
 import { buscarUsuario, USUARIOS } from '../../services/usuarios.js'
 
+// Lee el usuario guardado en el navegador (si lo hay), para mantener la sesión
+// aunque se recargue la página.
+function cargarUsuarioGuardado() {
+  try {
+    if (typeof localStorage === 'undefined') return null
+    const dato = localStorage.getItem('usuarioActual')
+    return dato ? JSON.parse(dato) : null
+  } catch {
+    return null
+  }
+}
+
 // Módulo de Vuex para la sesión y la personalización del usuario.
 export default {
   namespaced: true,
 
   state() {
     return {
-      usuarioActual: null, // null = no hay sesión iniciada
+      usuarioActual: cargarUsuarioGuardado(), // se recupera del navegador si existe
       error: '',
     }
   },
@@ -23,6 +35,13 @@ export default {
       state.usuarioActual ? state.usuarioActual.preferencias.unidad : 'C',
     tema: (state) =>
       state.usuarioActual ? state.usuarioActual.preferencias.tema : 'claro',
+    // Convierte una temperatura en Celsius a la unidad del usuario, con su símbolo
+    tempTexto: (state, getters) => (celsius) => {
+      if (getters.unidad === 'F') {
+        return `${Math.round((celsius * 9) / 5 + 32)}°F`
+      }
+      return `${celsius}°C`
+    },
   },
 
   // Las mutations son síncronas y son el único lugar donde cambia el state

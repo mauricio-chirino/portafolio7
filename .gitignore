@@ -42,3 +42,4 @@ __screenshots__/
 package-lock.json
 pnpm-lock.yaml
 *.zip
+*.docx
